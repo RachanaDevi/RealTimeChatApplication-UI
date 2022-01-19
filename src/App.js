@@ -5,6 +5,7 @@ import Input from "./components/Input/Input";
 import LoginForm from "./components/LoginForm";
 import Messages from "./components/Messages/Messages";
 import chatAPI from "./services/chatapi";
+// import { randomColor } from "./utils/common";
 
 const SOCKET_URL = "http://localhost:8081/ws-chat/";
 

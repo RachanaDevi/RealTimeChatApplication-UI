@@ -17,6 +17,12 @@ const Messages = ({ messages, currentUser }) => {
       </li>
     );
   };
+
+  return (
+    <ul className="messages-list">
+      {messages.map((msg) => renderMessage(msg))}
+    </ul>
+  );
 };
 
 export default Messages;

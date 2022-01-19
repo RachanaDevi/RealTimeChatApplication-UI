@@ -1,25 +1,69 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import SockJsClient from "react-stomp";
+import "./App.css";
+import Input from "./components/Input/Input";
+import LoginForm from "./components/LoginForm";
+import Messages from "./components/Messages/Messages";
+import chatAPI from "./services/chatapi";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const SOCKET_URL = "http://localhost:8081/ws-chat/";
+
+const App = () => {
+  const [messages, setMessages] = useState([]);
+  const [user, setUser] = useState(null);
+
+  let onConnected = () => {
+    console.log("Connected!!");
+  };
+
+  let onMessageReceived = (msg) => {
+    console.log("New Message Received!!", msg);
+    setMessages(messages.concat(msg));
+  };
+
+  let onSendMessage = (msgText) => {
+    console.log("I AM GOING TO SEND THE MESSAGE");
+    chatAPI
+      .sendMessage(user.username, msgText)
+      .then((res) => {
+        console.log("Sent", res);
+      })
+      .catch((err) => {
+        console.log("Error Occured while sending message to api", err);
+      });
+  };
+
+  let handleLoginSubmit = (username) => {
+    console.log(username, " Logged in..");
+
+    setUser({
+      username: username,
+      color: "#" + Math.floor(Math.random() * 0xffffff).toString(16),
+    });
+  };
+
+  {
+    return (
+      <div className="App">
+        {!!user ? (
+          <>
+            <SockJsClient
+              url={SOCKET_URL}
+              topics={["/topic/group"]}
+              onConnect={onConnected}
+              onDisconnect={console.log("Disconnected!")}
+              onMessage={(msg) => onMessageReceived(msg)}
+              debug={false}
+            />
+            <Messages messages={messages} currentUser={user} />
+            <Input onSendMessage={onSendMessage} />
+          </>
+        ) : (
+          <LoginForm onSubmit={handleLoginSubmit} />
+        )}
+      </div>
+    );
+  }
+};
 
 export default App;
